@@ -26,7 +26,7 @@ public class CategorizedItemsBuilderTest {
 	@Test
 	public void getItems_withNullRegex_ShouldReturnSortedList() {
 		String groupRegex = null;
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex);
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"");
 		String expected = 
 				"ba    css:padding-left:20px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
@@ -40,7 +40,7 @@ public class CategorizedItemsBuilderTest {
 	@Test
 	public void getItems_withEmptyRegex_ShouldReturnSortedList() {
 		String groupRegex = null;
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex);
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"");
 		String expected = 
 				"ba    css:padding-left:20px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
@@ -60,7 +60,7 @@ public class CategorizedItemsBuilderTest {
 		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
 		
 		String groupRegex = "(8...)";
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex);
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"");
 		String expected =
 				"8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
 				"  8.02-baz    css:padding-left:40px;\n" + 
@@ -70,6 +70,33 @@ public class CategorizedItemsBuilderTest {
 				"  8.03-foo    css:padding-left:40px;\n" + 
 				"  a8.03-foo    css:padding-left:40px;\n" + 
 				"ba    css:padding-left:20px;\n" + 
+				"ma    css:padding-left:20px;\n" + 
+				"me    css:padding-left:20px;\n" + 
+				"xa    css:padding-left:20px;\n";
+		
+		String actual = buildResultToCompare(items);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void getItems_withRegex_andNaming_ShouldGroupByRegexAndNameWithNamingRule() {
+		itemsToCategorize.add(new TopLevelItemMock("8.03-bar"));
+		itemsToCategorize.add(new TopLevelItemMock("8.02-foo"));
+		itemsToCategorize.add(new TopLevelItemMock("8.02-baz"));
+		itemsToCategorize.add(new TopLevelItemMock("8.03-foo"));
+		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
+		
+		String groupRegex = "(8...)";
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"foo $1");
+		String expected =
+				"ba    css:padding-left:20px;\n" + 
+				"foo 8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  8.02-baz    css:padding-left:40px;\n" + 
+				"  8.02-foo    css:padding-left:40px;\n" + 
+				"foo 8.03    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  8.03-bar    css:padding-left:40px;\n" + 
+				"  8.03-foo    css:padding-left:40px;\n" + 
+				"  a8.03-foo    css:padding-left:40px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
 				"me    css:padding-left:20px;\n" + 
 				"xa    css:padding-left:20px;\n";

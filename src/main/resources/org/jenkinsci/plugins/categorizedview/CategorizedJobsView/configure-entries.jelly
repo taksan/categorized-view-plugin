@@ -65,9 +65,6 @@ THE SOFTWARE.
     </f:entry>
   </f:optionalBlock>
   
-  <f:entry title="${%Group Regular Expression}">
-      <f:textbox name="groupRegex" field="groupRegex" />
-  </f:entry>
 
   <j:if test="${it.hasJobFilterExtensions()}">
    <f:block>
@@ -75,6 +72,15 @@ THE SOFTWARE.
    </f:block>
   </j:if>
 
+  </f:section>
+  
+  <f:section title="${%Job grouping}">
+  <f:entry title="${%Group Name Expression}" help="/plugin/categorized-view/groupNameExpression.html">
+      <f:textbox name="groupRegex" field="groupRegex" />
+  </f:entry>
+  <f:entry title="${%Naming Rule}"  help="/plugin/categorized-view/namingRule.html">
+      <f:textbox name="groupNamingRule" field="groupNamingRule"/>
+  </f:entry>
   </f:section>
 
   <f:section title="${%Columns}">

@@ -4,16 +4,15 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.TopLevelItem;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.ListView;
 import hudson.model.ViewDescriptor;
-import hudson.model.Descriptor.FormException;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.views.ListViewColumn;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -26,8 +25,10 @@ import org.kohsuke.stapler.StaplerRequest;
 
 public class CategorizedJobsView extends ListView {
 	private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(
-			this, CategorizedJobsListViewColumn.createDefaultInitialColumnList());
+						this, CategorizedJobsListViewColumn.createDefaultInitialColumnList());
+	
 	private String groupRegex;
+	private String groupNamingRule;
 	
 	@DataBoundConstructor
 	public CategorizedJobsView(String name) {
@@ -38,17 +39,23 @@ public class CategorizedJobsView extends ListView {
 	public List<TopLevelItem> getItems() {
 		return new CategorizedItemsBuilder().buildRegroupedItems(
 				super.getItems(), 
-				getGroupRegex());
+				getGroupRegex(),
+				getGroupNamingRule());
 	}
 	
 	@Override
 	protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
 		super.submit(req);
 		groupRegex = req.getParameter("groupRegex");
+		groupNamingRule = req.getParameter("groupNamingRule");
 	}
 	
     public String getGroupRegex() {
         return groupRegex;
+    }
+    
+    public String getGroupNamingRule() {
+    	return groupNamingRule;
     }
 	
 	public String getCss() {
@@ -56,13 +63,6 @@ public class CategorizedJobsView extends ListView {
 		builder.append("padding-left:");
 		builder.append("font-style:italic;font-size:smaller;font-weight:bold;");
 		return builder.toString();
-	}
-	
-	private int getNestLevelFor(TopLevelItem job) {
-		if (job.getName().startsWith("mat")) {
-			return 3;
-		}
-		return 0;
 	}
 
 	@Extension

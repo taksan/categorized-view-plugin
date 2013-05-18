@@ -14,14 +14,14 @@ import org.apache.commons.lang.StringUtils;
 public class CategorizedItemsBuilder {
 	final Comparator<TopLevelItem> comparator = new TopLevelItemComparator();
 
-	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> itemsToCategorize, String groupRegex) 
+	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> itemsToCategorize, String groupRegex, String namingRule) 
 	{
-		final List<IndentedTopLevelItem> groupedItems = buildCategorizedList(itemsToCategorize, groupRegex);
+		final List<IndentedTopLevelItem> groupedItems = buildCategorizedList(itemsToCategorize, groupRegex, namingRule);
 
 		return flattenList(groupedItems);
 	}
 	
-	private List<IndentedTopLevelItem> buildCategorizedList(List<TopLevelItem> itemsToCategorize, String groupRegex) {
+	private List<IndentedTopLevelItem> buildCategorizedList(List<TopLevelItem> itemsToCategorize, String groupRegex, String namingRule) {
 		final List<IndentedTopLevelItem> categorizedItems = new ArrayList<IndentedTopLevelItem>();
 		if (StringUtils.isEmpty(groupRegex)) {
 			for (TopLevelItem indentedTopLevelItem : itemsToCategorize) {
@@ -33,7 +33,7 @@ public class CategorizedItemsBuilder {
 		final String normalizedRegex = normalizeRegex(groupRegex);
 		for (TopLevelItem item : itemsToCategorize) {
 			if (item.getName().matches(normalizedRegex)) 
-				addItemInMatchingGroup(categorizedItems, normalizedRegex, item);
+				addItemInMatchingGroup(categorizedItems, normalizedRegex, item, namingRule);
 			else
 				categorizedItems.add(new IndentedTopLevelItem(item));
 		}
@@ -48,9 +48,9 @@ public class CategorizedItemsBuilder {
 		return regex;
 	}
 
-	private void addItemInMatchingGroup(final List<IndentedTopLevelItem> groupedItems, String regex, TopLevelItem item) 
+	private void addItemInMatchingGroup(final List<IndentedTopLevelItem> groupedItems, String regex, TopLevelItem item, String namingRule) 
 	{
-		final String groupNamingRule = "$1";
+		final String groupNamingRule = StringUtils.isEmpty(namingRule)?"$1":namingRule;
 		final String groupName = item.getName().replaceAll(regex, groupNamingRule);
 		IndentedTopLevelItem groupTopLevelItem = getGroupForItemOrCreateIfNeeded(groupedItems, groupName);
 		IndentedTopLevelItem subItem = new IndentedTopLevelItem(item, 1, groupName, "");
