@@ -28,10 +28,24 @@ public class CategorizedItemsBuilderTest {
 		String groupRegex = null;
 		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex);
 		String expected = 
-				"ba\n" +
-				"ma\n" +
-				"me\n" +
-				"xa\n";
+				"ba    css:padding-left:20px;\n" + 
+				"ma    css:padding-left:20px;\n" + 
+				"me    css:padding-left:20px;\n" + 
+				"xa    css:padding-left:20px;\n";
+		
+		String actual = buildResultToCompare(items);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void getItems_withEmptyRegex_ShouldReturnSortedList() {
+		String groupRegex = null;
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex);
+		String expected = 
+				"ba    css:padding-left:20px;\n" + 
+				"ma    css:padding-left:20px;\n" + 
+				"me    css:padding-left:20px;\n" + 
+				"xa    css:padding-left:20px;\n";
 		
 		String actual = buildResultToCompare(items);
 		assertEquals(expected, actual);
@@ -48,17 +62,17 @@ public class CategorizedItemsBuilderTest {
 		String groupRegex = "(8...)";
 		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex);
 		String expected =
-				"8.02\n"+
-				"  8.02-baz\n"+
-				"  8.02-foo\n"+
-				"8.03\n"+
-				"  8.03-bar\n"+
-				"  8.03-foo\n"+
-				"  a8.03-foo\n"+	
-				"ba\n" +
-				"ma\n" +
-				"me\n" +
-				"xa\n";
+				"8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  8.02-baz    css:padding-left:40px;\n" + 
+				"  8.02-foo    css:padding-left:40px;\n" + 
+				"8.03    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  8.03-bar    css:padding-left:40px;\n" + 
+				"  8.03-foo    css:padding-left:40px;\n" + 
+				"  a8.03-foo    css:padding-left:40px;\n" + 
+				"ba    css:padding-left:20px;\n" + 
+				"ma    css:padding-left:20px;\n" + 
+				"me    css:padding-left:20px;\n" + 
+				"xa    css:padding-left:20px;\n";
 		
 		String actual = buildResultToCompare(items);
 		assertEquals(expected, actual);
@@ -70,6 +84,8 @@ public class CategorizedItemsBuilderTest {
 			IndentedTopLevelItem identedItem = (IndentedTopLevelItem)topLevelItem;
 			sb.append(StringUtils.repeat("  ", identedItem.getNestLevel()));
 			sb.append(identedItem.getName());
+			sb.append("    css:");
+			sb.append(identedItem.getCss());
 			sb.append("\n");
 		}
 		return sb.toString();

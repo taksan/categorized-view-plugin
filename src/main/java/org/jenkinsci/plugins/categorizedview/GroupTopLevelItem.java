@@ -13,7 +13,6 @@ import hudson.security.Permission;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -136,14 +135,7 @@ public class GroupTopLevelItem  implements TopLevelItem {
 		return labelText;
 	}
 
-	public void add(TopLevelItem item) {
-		nestedItems.add(item);
+	public String getCss() {
+		return "font-style:italic;font-size:smaller;font-weight:bold;";
 	}
-	
-	public List<TopLevelItem> getNestedItems() {
-		return nestedItems;
-	}
-	
-	private List<TopLevelItem> nestedItems = new ArrayList<TopLevelItem>();
-
 }

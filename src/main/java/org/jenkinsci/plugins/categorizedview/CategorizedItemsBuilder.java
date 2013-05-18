@@ -8,82 +8,89 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
 
 public class CategorizedItemsBuilder {
 	final Comparator<TopLevelItem> comparator = new TopLevelItemComparator();
 
-	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> itemsToCategorize, String groupRegex) {
-		final List<TopLevelItem> groupedItems = buildItemsGroupsByRegex(itemsToCategorize, groupRegex);
-		Collections.sort(groupedItems, comparator);
-		
-		return buildResultItemList(groupedItems);
+	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> itemsToCategorize, String groupRegex) 
+	{
+		final List<IndentedTopLevelItem> groupedItems = buildCategorizedList(itemsToCategorize, groupRegex);
+
+		return flattenList(groupedItems);
 	}
 	
-	private List<TopLevelItem> buildItemsGroupsByRegex(List<TopLevelItem> itemsToCategorize, String groupRegex) {
-		final List<TopLevelItem> groupedItems = new ArrayList<TopLevelItem>();
-		if (groupRegex == null) {
-			groupedItems.addAll(itemsToCategorize);
-			return groupedItems;
+	private List<IndentedTopLevelItem> buildCategorizedList(List<TopLevelItem> itemsToCategorize, String groupRegex) {
+		final List<IndentedTopLevelItem> categorizedItems = new ArrayList<IndentedTopLevelItem>();
+		if (StringUtils.isEmpty(groupRegex)) {
+			for (TopLevelItem indentedTopLevelItem : itemsToCategorize) {
+				categorizedItems.add(new IndentedTopLevelItem(indentedTopLevelItem));
+			}
+			return categorizedItems;
 		}
 		
-		final Map<String, GroupTopLevelItem> groupItemByGroupName = new HashMap<String, GroupTopLevelItem>();
+		final String normalizedRegex = normalizeRegex(groupRegex);
+		for (TopLevelItem item : itemsToCategorize) {
+			if (item.getName().matches(normalizedRegex)) 
+				addItemInMatchingGroup(categorizedItems, normalizedRegex, item);
+			else
+				categorizedItems.add(new IndentedTopLevelItem(item));
+		}
+		return categorizedItems;
+	}
+
+	private String normalizeRegex(String groupRegex) {
 		String regex = ".*"+groupRegex+".*";
 		if (!groupRegex.contains("(")) {
 			regex = ".*("+groupRegex+").*";
 		}
-		for (TopLevelItem item : itemsToCategorize) {
-			if (item.getName().matches(regex)) {
-				final String groupNamingRule = "$1";
-				final String groupName = item.getName().replaceAll(regex, groupNamingRule);
-				GroupTopLevelItem groupTopLevelItem = getGroupForItemOrCreateIfNeeded(groupedItems, groupItemByGroupName, groupName);
-				groupTopLevelItem.add(item);
-				continue;
-			}
-			groupedItems.add(item);
-		}
-		return groupedItems;
+		return regex;
 	}
 
-	private List<TopLevelItem> buildResultItemList(final List<TopLevelItem> groupedItems) {
+	private void addItemInMatchingGroup(final List<IndentedTopLevelItem> groupedItems, String regex, TopLevelItem item) 
+	{
+		final String groupNamingRule = "$1";
+		final String groupName = item.getName().replaceAll(regex, groupNamingRule);
+		IndentedTopLevelItem groupTopLevelItem = getGroupForItemOrCreateIfNeeded(groupedItems, groupName);
+		IndentedTopLevelItem subItem = new IndentedTopLevelItem(item, 1, groupName, "");
+		groupTopLevelItem.add(subItem);
+	}
+
+	private List<TopLevelItem> flattenList(final List<IndentedTopLevelItem> groupedItems) 
+	{
 		final ArrayList<TopLevelItem> res = new ArrayList<TopLevelItem>();
 		
-		for (TopLevelItem item : groupedItems) {
+		Collections.sort(groupedItems, comparator);
+		for (IndentedTopLevelItem item : groupedItems) {
 			final String groupLabel = item.getName();
-			res.add(new IndentedTopLevelItem(item, 0, groupLabel));
 			addNestedItemsAsIndentedItemsInTheResult(res, item,	groupLabel);
 		}
 		
 		return res;
 	}
 
-	private void addNestedItemsAsIndentedItemsInTheResult(
-			final ArrayList<TopLevelItem> res, TopLevelItem item,
-			final String groupLabel) {
-		if (item instanceof GroupTopLevelItem) {
-			List<TopLevelItem> nestedItems = ((GroupTopLevelItem)item).getNestedItems();
+	private void addNestedItemsAsIndentedItemsInTheResult(final ArrayList<TopLevelItem> res, IndentedTopLevelItem item, final String groupLabel) {
+		res.add(item);
+		if (item.getNestedItems().size() > 0) {
+			List<IndentedTopLevelItem> nestedItems = item.getNestedItems();
 			Collections.sort(nestedItems, comparator);
-			for (TopLevelItem aNestedItem : nestedItems) {
-				final int indentLevel = 1;
-				IndentedTopLevelItem idented = new IndentedTopLevelItem(aNestedItem, indentLevel, groupLabel);
-				res.add(idented);
-			}
+			res.addAll(nestedItems);
 		}
 	}
 
 	
-
-	private GroupTopLevelItem getGroupForItemOrCreateIfNeeded(
-			final List<TopLevelItem> groupedItems,
-			final Map<String, GroupTopLevelItem> groupedItemsByName,
+	final Map<String, IndentedTopLevelItem> groupItemByGroupName = new HashMap<String, IndentedTopLevelItem>();
+	private IndentedTopLevelItem getGroupForItemOrCreateIfNeeded(
+			final List<IndentedTopLevelItem> groupedItems,
 			final String groupName) {
-		boolean groupIsMissing = !groupedItemsByName.containsKey(groupName);
+		boolean groupIsMissing = !groupItemByGroupName.containsKey(groupName);
 		if (groupIsMissing) {
-			groupedItemsByName.put(groupName, new GroupTopLevelItem(groupName));
-			groupedItems.add(groupedItemsByName.get(groupName));
+			GroupTopLevelItem value = new GroupTopLevelItem(groupName);
+			IndentedTopLevelItem value2 = new IndentedTopLevelItem(value, 0, groupName, value.getCss());
+			groupItemByGroupName.put(groupName, value2);
+			groupedItems.add(groupItemByGroupName.get(groupName));
 		}
-		GroupTopLevelItem groupTopLevelItem = (GroupTopLevelItem)groupedItemsByName.get(groupName);
-		return groupTopLevelItem;
+		return groupItemByGroupName.get(groupName);
 	}
 }

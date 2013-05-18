@@ -2,7 +2,9 @@ package org.jenkinsci.plugins.categorizedview;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.acegisecurity.AccessDeniedException;
 
@@ -21,12 +23,17 @@ public class IndentedTopLevelItem implements TopLevelItem {
 	private final TopLevelItem decorated;
 	private int nestLevel;
 	private final String groupLabel;
-	public IndentedTopLevelItem(TopLevelItem decorated, int nestLevel, String groupLabel) {
+	public IndentedTopLevelItem(TopLevelItem decorated, int nestLevel, String groupLabel, String css) {
 		this.decorated = decorated;
 		this.nestLevel = nestLevel;
 		this.groupLabel = groupLabel;
+		this.specificCss.append(css);
 	}
 	
+	public IndentedTopLevelItem(TopLevelItem item) {
+		this(item,0,"","");
+	}
+
 	public int getNestLevel() {
 		return nestLevel;
 	}
@@ -143,11 +150,28 @@ public class IndentedTopLevelItem implements TopLevelItem {
 	}
 
 	public String getCss() {
+		StringBuilder builder = getBasicCss();
+		return builder.toString();
+	}
+
+	private StringBuilder getBasicCss() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("padding-left:");
 		builder.append(String.valueOf((getNestLevel() + 1) * 20));
 		builder.append("px;");
-//		builder.append("font-style:italic;font-size:smaller;font-weight:bold;");
-		return builder.toString();
+		builder.append(specificCss.toString());
+		return builder;
 	}
+
+	StringBuilder specificCss = new StringBuilder();
+	
+	public void add(IndentedTopLevelItem item) {
+		nestedItems.add(item);
+	}
+	
+	public List<IndentedTopLevelItem> getNestedItems() {
+		return nestedItems;
+	}
+	
+	private List<IndentedTopLevelItem> nestedItems = new ArrayList<IndentedTopLevelItem>();
 }
