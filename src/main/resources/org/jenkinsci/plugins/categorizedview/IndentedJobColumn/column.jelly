@@ -1,0 +1,18 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:i="jelly:fmt">
+	 <script src="${rootURL}/plugin/categorized-view/sectionToggle.js"/>
+	
+		<j:choose>
+			<j:when test="${!job.hasLink()}">
+			<td style="${job.getCss()}">
+				<span style='cursor: pointer' onClick="toggleGroupVisibility(this,'${job.getGroupClass()}')">[-]</span>${job.displayName}
+			</td>
+			</j:when>
+			<j:when test="${job.hasLink()}">
+			<td style="${job.getCss()}" class="${job.getGroupClass()}">			
+				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
+			</td>				
+			</j:when>
+		</j:choose>
+</j:jelly>
