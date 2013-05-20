@@ -8,7 +8,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class IndentedJobColumn extends CategorizedJobsListViewColumn {
 	@DataBoundConstructor
     public IndentedJobColumn() {
-		System.out.println("building IndentedJobColumn");
+		//
     }
 
     @Extension

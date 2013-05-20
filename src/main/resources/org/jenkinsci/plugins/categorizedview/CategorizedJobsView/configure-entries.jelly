@@ -75,12 +75,13 @@ THE SOFTWARE.
   </f:section>
   
   <f:section title="${%Job grouping}">
-  <f:entry title="${%Group Name Expression}" help="/plugin/categorized-view/groupNameExpression.html">
-      <f:textbox name="groupRegex" field="groupRegex" />
-  </f:entry>
-  <f:entry title="${%Naming Rule}"  help="/plugin/categorized-view/namingRule.html">
-      <f:textbox name="groupNamingRule" field="groupNamingRule"/>
-  </f:entry>
+  
+  <f:entry title="${%Grouping rules}">
+      <f:repeatableProperty field="groupingRules" name="groupingRules" items="${it.groupingRules}" add="${%Add new group rule}">
+      </f:repeatableProperty>
+    </f:entry>  
+  
+  
   </f:section>
 
   <f:section title="${%Columns}">

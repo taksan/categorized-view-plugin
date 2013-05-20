@@ -9,26 +9,32 @@ import hudson.model.ListView;
 import hudson.model.ViewDescriptor;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
+import hudson.views.ViewJobFilter;
 import hudson.views.ListViewColumn;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletException;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class CategorizedJobsView extends ListView {
+	@SuppressWarnings("unused")
 	private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(
 						this, CategorizedJobsListViewColumn.createDefaultInitialColumnList());
 	
-	private String groupRegex;
-	private String groupNamingRule;
+	private List<GroupingRule> groupingRules = new ArrayList<GroupingRule>();
 	
 	@DataBoundConstructor
 	public CategorizedJobsView(String name) {
@@ -39,23 +45,30 @@ public class CategorizedJobsView extends ListView {
 	public List<TopLevelItem> getItems() {
 		return new CategorizedItemsBuilder().buildRegroupedItems(
 				super.getItems(), 
-				getGroupRegex(),
-				getGroupNamingRule());
+				groupingRules);
 	}
 	
 	@Override
 	protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
 		super.submit(req);
-		groupRegex = req.getParameter("groupRegex");
-		groupNamingRule = req.getParameter("groupNamingRule");
+		groupingRules = new ArrayList<GroupingRule>();
+		
+		if (req.getSubmittedForm().get("groupingRules") instanceof JSONObject) {
+			GroupingRule bindJSON = req.bindJSON(GroupingRule.class, req.getSubmittedForm().getJSONObject("groupingRules"));
+			groupingRules.add(bindJSON);
+		}
+		else {
+			JSONArray jsonArray = req.getSubmittedForm().getJSONArray("groupingRules");
+			for (Object object : jsonArray) {
+				JSONObject json= (JSONObject) object;
+				GroupingRule bindJSON = req.bindJSON(GroupingRule.class, json);
+				groupingRules.add(bindJSON);
+			}
+		}
 	}
-	
-    public String getGroupRegex() {
-        return groupRegex;
-    }
     
-    public String getGroupNamingRule() {
-    	return groupNamingRule;
+    public List<GroupingRule> getGroupingRules() {
+        return groupingRules;
     }
 	
 	public String getCss() {
@@ -70,7 +83,7 @@ public class CategorizedJobsView extends ListView {
 		public String getDisplayName() {
 			return "Categorized Jobs View";
 		}
-
+		
 		/**
 		 * Checks if the include regular expression is valid.
 		 */

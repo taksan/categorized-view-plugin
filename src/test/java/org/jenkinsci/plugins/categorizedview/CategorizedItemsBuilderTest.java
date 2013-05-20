@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import hudson.model.TopLevelItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,7 +27,7 @@ public class CategorizedItemsBuilderTest {
 	@Test
 	public void getItems_withNullRegex_ShouldReturnSortedList() {
 		String groupRegex = null;
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"");
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
 		String expected = 
 				"ba    css:padding-left:20px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
@@ -40,7 +41,7 @@ public class CategorizedItemsBuilderTest {
 	@Test
 	public void getItems_withEmptyRegex_ShouldReturnSortedList() {
 		String groupRegex = null;
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"");
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
 		String expected = 
 				"ba    css:padding-left:20px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
@@ -60,7 +61,7 @@ public class CategorizedItemsBuilderTest {
 		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
 		
 		String groupRegex = "(8...)";
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"");
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
 		String expected =
 				"8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
 				"  8.02-baz    css:padding-left:40px;\n" + 
@@ -87,7 +88,7 @@ public class CategorizedItemsBuilderTest {
 		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
 		
 		String groupRegex = "(8...)";
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, groupRegex,"foo $1");
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "foo $1")));
 		String expected =
 				"ba    css:padding-left:20px;\n" + 
 				"foo 8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
@@ -100,6 +101,37 @@ public class CategorizedItemsBuilderTest {
 				"ma    css:padding-left:20px;\n" + 
 				"me    css:padding-left:20px;\n" + 
 				"xa    css:padding-left:20px;\n";
+		
+		String actual = buildResultToCompare(items);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void buildRegroupedItems_withListOfRegexAndNamingRules_ShouldUseAllRulesToCategorize() {
+		itemsToCategorize.add(new TopLevelItemMock("8.03-bar"));
+		itemsToCategorize.add(new TopLevelItemMock("8.02-foo"));
+		itemsToCategorize.add(new TopLevelItemMock("8.02-baz"));
+		itemsToCategorize.add(new TopLevelItemMock("8.03-foo"));
+		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
+		
+		List<GroupingRule> rules = Arrays.asList(
+				new GroupingRule("(8...)", "Foo $1"),
+				new GroupingRule("(m)", "baz $1")
+				);
+		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, rules);
+		String expected =
+				"ba    css:padding-left:20px;\n" + 
+				"baz m    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  ma    css:padding-left:40px;\n" + 
+				"  me    css:padding-left:40px;\n" + 
+				"Foo 8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  8.02-baz    css:padding-left:40px;\n" + 
+				"  8.02-foo    css:padding-left:40px;\n" + 
+				"Foo 8.03    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"  8.03-bar    css:padding-left:40px;\n" + 
+				"  8.03-foo    css:padding-left:40px;\n" + 
+				"  a8.03-foo    css:padding-left:40px;\n" + 
+				"xa    css:padding-left:20px;\n"; 
 		
 		String actual = buildResultToCompare(items);
 		assertEquals(expected, actual);

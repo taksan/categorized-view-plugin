@@ -14,38 +14,40 @@ import org.apache.commons.lang.StringUtils;
 public class CategorizedItemsBuilder {
 	final Comparator<TopLevelItem> comparator = new TopLevelItemComparator();
 
-	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> itemsToCategorize, String groupRegex, String namingRule) 
-	{
-		final List<IndentedTopLevelItem> groupedItems = buildCategorizedList(itemsToCategorize, groupRegex, namingRule);
-
+	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> items, List<GroupingRule> groupingRules) {
+		final List<IndentedTopLevelItem> groupedItems = buildCategorizedList(items, groupingRules);
 		return flattenList(groupedItems);
 	}
 	
-	private List<IndentedTopLevelItem> buildCategorizedList(List<TopLevelItem> itemsToCategorize, String groupRegex, String namingRule) {
+	private List<IndentedTopLevelItem> buildCategorizedList(List<TopLevelItem> itemsToCategorize, List<GroupingRule> groupingRules) {
 		final List<IndentedTopLevelItem> categorizedItems = new ArrayList<IndentedTopLevelItem>();
-		if (StringUtils.isEmpty(groupRegex)) {
+		if (groupingRules.size()==0) {
 			for (TopLevelItem indentedTopLevelItem : itemsToCategorize) {
 				categorizedItems.add(new IndentedTopLevelItem(indentedTopLevelItem));
 			}
 			return categorizedItems;
 		}
 		
-		final String normalizedRegex = normalizeRegex(groupRegex);
 		for (TopLevelItem item : itemsToCategorize) {
-			if (item.getName().matches(normalizedRegex)) 
-				addItemInMatchingGroup(categorizedItems, normalizedRegex, item, namingRule);
-			else
+			boolean categorized = tryToFitItemToRegexCategory(groupingRules, categorizedItems, item);
+			if (!categorized)
 				categorizedItems.add(new IndentedTopLevelItem(item));
 		}
 		return categorizedItems;
 	}
 
-	private String normalizeRegex(String groupRegex) {
-		String regex = ".*"+groupRegex+".*";
-		if (!groupRegex.contains("(")) {
-			regex = ".*("+groupRegex+").*";
+	private boolean tryToFitItemToRegexCategory( List<GroupingRule> groupingRules, final List<IndentedTopLevelItem> categorizedItems, TopLevelItem item) 
+	{
+		for (GroupingRule groupingRule : groupingRules) {
+			if (StringUtils.isEmpty(groupingRule.getNormalizedGroupRegex())) 
+				continue;
+			
+			if (item.getName().matches(groupingRule.getNormalizedGroupRegex())) {
+				addItemInMatchingGroup(categorizedItems, groupingRule.getNormalizedGroupRegex(), item, groupingRule.getNamingRule());
+				return true;
+			}
 		}
-		return regex;
+		return false;
 	}
 
 	private void addItemInMatchingGroup(final List<IndentedTopLevelItem> groupedItems, String regex, TopLevelItem item, String namingRule) 
@@ -93,4 +95,5 @@ public class CategorizedItemsBuilder {
 		}
 		return groupItemByGroupName.get(groupName);
 	}
+
 }
