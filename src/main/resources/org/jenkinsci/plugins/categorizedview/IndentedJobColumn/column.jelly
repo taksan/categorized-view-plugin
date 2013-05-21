@@ -5,20 +5,20 @@
 			<script src="${rootURL}/plugin/categorized-view/sectionToggle.js"/>
 		</st:once>	
 		<j:choose>
-			<j:when test="${!job.hasLink()}">
-			<td style="${job.getCss()}">
-				<span id="handle_${job.getGroupClass()}" style='cursor: pointer' 
-					onClick="toggleJogGroupVisibility(this,'${view.getViewName()}','${job.getGroupClass()}')">[-]</span> 
+			<j:when test="${!view.hasLink(job)}">
+			<td style="${view.getCssFor(job)}">
+				<span id="handle_${view.getGroupClassFor(job)}" style='cursor: pointer' 
+					onClick="toggleJogGroupVisibility(this,'${view.getViewName()}','${view.getGroupClassFor(job)}')">[-]</span> 
 				${job.displayName}
 			</td>
 			<script type="text/javascript">
 				document.observe("dom:loaded", function() {
-					restoreJobGroupCollapseState("${view.getViewName()}", "${job.getGroupClass()}")
+					restoreJobGroupCollapseState("${view.getViewName()}", "${view.getGroupClassFor(job)}")
 				});
 			</script>
 			</j:when>
-			<j:when test="${job.hasLink()}">
-			<td style="${job.getCss()}" class="${job.getGroupClass()}">			
+			<j:when test="${view.hasLink(job)}">
+			<td style="${view.getCssFor(job)}" class="${view.getGroupClassFor(job)}">			
 				<a href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
 			</td>				
 			</j:when>

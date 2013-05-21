@@ -14,7 +14,6 @@ import org.junit.Test;
 public class CategorizedItemsBuilderTest {
 	
 	private List<TopLevelItem> itemsToCategorize;
-	final CategorizedItemsBuilder subject = new CategorizedItemsBuilder();
 
 	public CategorizedItemsBuilderTest() {
 		itemsToCategorize = new ArrayList<TopLevelItem>();
@@ -27,28 +26,30 @@ public class CategorizedItemsBuilderTest {
 	@Test
 	public void getItems_withNullRegex_ShouldReturnSortedList() {
 		String groupRegex = null;
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
+		final CategorizedItemsBuilder subject = new CategorizedItemsBuilder(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
+		
 		String expected = 
 				"ba    css:padding-left:20px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
 				"me    css:padding-left:20px;\n" + 
 				"xa    css:padding-left:20px;\n";
 		
-		String actual = buildResultToCompare(items);
+		String actual = buildResultToCompare(subject);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void getItems_withEmptyRegex_ShouldReturnSortedList() {
-		String groupRegex = null;
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
+		String groupRegex = "";
+		final CategorizedItemsBuilder subject = new CategorizedItemsBuilder(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
+		String actual = buildResultToCompare(subject);
+		
 		String expected = 
 				"ba    css:padding-left:20px;\n" + 
 				"ma    css:padding-left:20px;\n" + 
 				"me    css:padding-left:20px;\n" + 
 				"xa    css:padding-left:20px;\n";
 		
-		String actual = buildResultToCompare(items);
 		assertEquals(expected, actual);
 	}
 	
@@ -61,7 +62,8 @@ public class CategorizedItemsBuilderTest {
 		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
 		
 		String groupRegex = "(8...)";
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
+		final CategorizedItemsBuilder subject = new CategorizedItemsBuilder(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "")));
+		
 		String expected =
 				"8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
 				"  8.02-baz    css:padding-left:40px;\n" + 
@@ -75,7 +77,7 @@ public class CategorizedItemsBuilderTest {
 				"me    css:padding-left:20px;\n" + 
 				"xa    css:padding-left:20px;\n";
 		
-		String actual = buildResultToCompare(items);
+		String actual = buildResultToCompare(subject);
 		assertEquals(expected, actual);
 	}
 	
@@ -88,7 +90,7 @@ public class CategorizedItemsBuilderTest {
 		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
 		
 		String groupRegex = "(8...)";
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "foo $1")));
+		final CategorizedItemsBuilder subject = new CategorizedItemsBuilder(itemsToCategorize, Arrays.asList(new GroupingRule(groupRegex, "foo $1")));
 		String expected =
 				"ba    css:padding-left:20px;\n" + 
 				"foo 8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
@@ -102,7 +104,7 @@ public class CategorizedItemsBuilderTest {
 				"me    css:padding-left:20px;\n" + 
 				"xa    css:padding-left:20px;\n";
 		
-		String actual = buildResultToCompare(items);
+		String actual = buildResultToCompare(subject);
 		assertEquals(expected, actual);
 	}
 	
@@ -119,7 +121,7 @@ public class CategorizedItemsBuilderTest {
 				new GroupingRule("(8...)", "Foo $1"),
 				new GroupingRule("(m)", "baz $1")
 				);
-		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, rules);
+		final CategorizedItemsBuilder subject = new CategorizedItemsBuilder(itemsToCategorize, rules);
 		String expected =
 				"ba    css:padding-left:20px;\n" + 
 				"baz m    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" +
@@ -136,18 +138,18 @@ public class CategorizedItemsBuilderTest {
 				"  m8.03-foo    css:padding-left:40px;\n" +
 				"xa    css:padding-left:20px;\n"; 
 		
-		String actual = buildResultToCompare(items);
+		String actual = buildResultToCompare(subject);
 		assertEquals(expected, actual);
 	}
 
-	private String buildResultToCompare(List<TopLevelItem> items) {
+	private String buildResultToCompare(CategorizedItemsBuilder subject) {
+		List<TopLevelItem> items = subject.getRegroupedItems();
 		StringBuffer sb = new StringBuffer();
-		for (TopLevelItem topLevelItem : items) {
-			IndentedTopLevelItem identedItem = (IndentedTopLevelItem)topLevelItem;
-			sb.append(StringUtils.repeat("  ", identedItem.getNestLevel()));
+		for (TopLevelItem identedItem : items) {
+			sb.append(StringUtils.repeat("  ", subject.getNestLevelFor(identedItem)));
 			sb.append(identedItem.getName());
 			sb.append("    css:");
-			sb.append(identedItem.getCss());
+			sb.append(subject.getCssFor(identedItem));
 			sb.append("\n");
 		}
 		return sb.toString();

@@ -5,26 +5,20 @@ import hudson.Util;
 import hudson.model.TopLevelItem;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Job;
 import hudson.model.ListView;
 import hudson.model.ViewDescriptor;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.views.ViewJobFilter;
 import hudson.views.ListViewColumn;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletException;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -32,6 +26,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 public class CategorizedJobsView extends ListView {
 	private List<GroupingRule> groupingRules = new ArrayList<GroupingRule>();
+	private transient CategorizedItemsBuilder categorizedItemsBuilder;
 	
 	@DataBoundConstructor
 	public CategorizedJobsView(String name) {
@@ -40,9 +35,8 @@ public class CategorizedJobsView extends ListView {
 	
 	@Override
 	public List<TopLevelItem> getItems() {
-		return new CategorizedItemsBuilder().buildRegroupedItems(
-				super.getItems(), 
-				groupingRules);
+		categorizedItemsBuilder = new CategorizedItemsBuilder(super.getItems(), groupingRules);
+		return categorizedItemsBuilder.getRegroupedItems();
 	}
 	
 	@Override
@@ -54,14 +48,19 @@ public class CategorizedJobsView extends ListView {
     public List<GroupingRule> getGroupingRules() {
         return groupingRules;
     }
+    
+    public String getCssFor(TopLevelItem item) {
+    	return categorizedItemsBuilder.getCssFor(item);
+    }
+    
+    public String getGroupClassFor(TopLevelItem item) {
+    	return categorizedItemsBuilder.getGrouClassFor(item);
+    }
+    
+    public boolean hasLink(TopLevelItem item) {
+    	return item.getShortUrl() != null;
+    }
 	
-	public String getCss() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("padding-left:");
-		builder.append("font-style:italic;font-size:smaller;font-weight:bold;");
-		return builder.toString();
-	}
-
 	@Extension
 	public static final class DescriptorImpl extends ViewDescriptor {
 		public String getDisplayName() {

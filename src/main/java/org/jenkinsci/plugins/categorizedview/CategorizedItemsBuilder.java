@@ -6,15 +6,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
 public class CategorizedItemsBuilder {
-	final Comparator<TopLevelItem> comparator = new TopLevelItemComparator();
+	final Comparator<IndentedTopLevelItem> comparator = new TopLevelItemComparator();
+	private List<TopLevelItem> itemsToCategorize;
+	private List<GroupingRule> groupingRules;
+	private Map<String, IndentedTopLevelItem> itemsData;
 
-	public List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> items, List<GroupingRule> groupingRules) {
+	public CategorizedItemsBuilder(List<TopLevelItem> itemsToCategorize, List<GroupingRule> groupingRules) {
+		this.itemsToCategorize = itemsToCategorize;
+		this.groupingRules = groupingRules;
+	}
+	
+	public List<TopLevelItem> getRegroupedItems() {
+		return buildRegroupedItems(itemsToCategorize, groupingRules);
+	}
+
+	private List<TopLevelItem> buildRegroupedItems(List<TopLevelItem> items, List<GroupingRule> groupingRules) {
 		final List<IndentedTopLevelItem> groupedItems = buildCategorizedList(items, groupingRules);
 		return flattenList(groupedItems);
 	}
@@ -40,7 +53,7 @@ public class CategorizedItemsBuilder {
 	{
 		boolean grouped = false;
 		for (GroupingRule groupingRule : groupingRules) {
-			if (StringUtils.isEmpty(groupingRule.getNormalizedGroupRegex())) 
+			if (StringUtils.isEmpty(groupingRule.getGroupRegex())) 
 				continue;
 			
 			if (item.getName().matches(groupingRule.getNormalizedGroupRegex())) {
@@ -63,10 +76,10 @@ public class CategorizedItemsBuilder {
 	private List<TopLevelItem> flattenList(final List<IndentedTopLevelItem> groupedItems) 
 	{
 		final ArrayList<TopLevelItem> res = new ArrayList<TopLevelItem>();
-		
+		itemsData = new LinkedHashMap<String, IndentedTopLevelItem>();
 		Collections.sort(groupedItems, comparator);
 		for (IndentedTopLevelItem item : groupedItems) {
-			final String groupLabel = item.getName();
+			final String groupLabel = item.target.getName();
 			addNestedItemsAsIndentedItemsInTheResult(res, item,	groupLabel);
 		}
 		
@@ -74,14 +87,17 @@ public class CategorizedItemsBuilder {
 	}
 
 	private void addNestedItemsAsIndentedItemsInTheResult(final ArrayList<TopLevelItem> res, IndentedTopLevelItem item, final String groupLabel) {
-		res.add(item);
+		res.add(item.target);
+		itemsData.put(item.target.getName(), item);
 		if (item.getNestedItems().size() > 0) {
 			List<IndentedTopLevelItem> nestedItems = item.getNestedItems();
 			Collections.sort(nestedItems, comparator);
-			res.addAll(nestedItems);
+			for (IndentedTopLevelItem indentedTopLevelItem : nestedItems) {
+				res.add(indentedTopLevelItem.target);
+				itemsData.put(indentedTopLevelItem.target.getName(), indentedTopLevelItem);
+			}
 		}
 	}
-
 	
 	final Map<String, IndentedTopLevelItem> groupItemByGroupName = new HashMap<String, IndentedTopLevelItem>();
 	private IndentedTopLevelItem getGroupForItemOrCreateIfNeeded(
@@ -97,4 +113,15 @@ public class CategorizedItemsBuilder {
 		return groupItemByGroupName.get(groupName);
 	}
 
+	public int getNestLevelFor(TopLevelItem identedItem) {
+		return itemsData.get(identedItem.getName()).getNestLevel();
+	}
+
+	public String getCssFor(TopLevelItem identedItem) {
+		return itemsData.get(identedItem.getName()).getCss();
+	}
+
+	public String getGrouClassFor(TopLevelItem item) {
+		return itemsData.get(item.getName()).getGroupClass();
+	}
 }
