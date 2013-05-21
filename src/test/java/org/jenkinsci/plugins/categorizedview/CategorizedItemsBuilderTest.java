@@ -113,6 +113,7 @@ public class CategorizedItemsBuilderTest {
 		itemsToCategorize.add(new TopLevelItemMock("8.02-baz"));
 		itemsToCategorize.add(new TopLevelItemMock("8.03-foo"));
 		itemsToCategorize.add(new TopLevelItemMock("a8.03-foo"));
+		itemsToCategorize.add(new TopLevelItemMock("m8.03-foo"));
 		
 		List<GroupingRule> rules = Arrays.asList(
 				new GroupingRule("(8...)", "Foo $1"),
@@ -121,7 +122,8 @@ public class CategorizedItemsBuilderTest {
 		List<TopLevelItem> items = subject.buildRegroupedItems(itemsToCategorize, rules);
 		String expected =
 				"ba    css:padding-left:20px;\n" + 
-				"baz m    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
+				"baz m    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" +
+				"  m8.03-foo    css:padding-left:40px;\n" +
 				"  ma    css:padding-left:40px;\n" + 
 				"  me    css:padding-left:40px;\n" + 
 				"Foo 8.02    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
@@ -130,7 +132,8 @@ public class CategorizedItemsBuilderTest {
 				"Foo 8.03    css:padding-left:20px;font-style:italic;font-size:smaller;font-weight:bold;\n" + 
 				"  8.03-bar    css:padding-left:40px;\n" + 
 				"  8.03-foo    css:padding-left:40px;\n" + 
-				"  a8.03-foo    css:padding-left:40px;\n" + 
+				"  a8.03-foo    css:padding-left:40px;\n" +
+				"  m8.03-foo    css:padding-left:40px;\n" +
 				"xa    css:padding-left:20px;\n"; 
 		
 		String actual = buildResultToCompare(items);

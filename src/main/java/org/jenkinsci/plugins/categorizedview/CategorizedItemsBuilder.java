@@ -38,16 +38,17 @@ public class CategorizedItemsBuilder {
 
 	private boolean tryToFitItemToRegexCategory( List<GroupingRule> groupingRules, final List<IndentedTopLevelItem> categorizedItems, TopLevelItem item) 
 	{
+		boolean grouped = false;
 		for (GroupingRule groupingRule : groupingRules) {
 			if (StringUtils.isEmpty(groupingRule.getNormalizedGroupRegex())) 
 				continue;
 			
 			if (item.getName().matches(groupingRule.getNormalizedGroupRegex())) {
 				addItemInMatchingGroup(categorizedItems, groupingRule.getNormalizedGroupRegex(), item, groupingRule.getNamingRule());
-				return true;
+				grouped = true;
 			}
 		}
-		return false;
+		return grouped;
 	}
 
 	private void addItemInMatchingGroup(final List<IndentedTopLevelItem> groupedItems, String regex, TopLevelItem item, String namingRule) 

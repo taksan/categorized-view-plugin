@@ -7,17 +7,19 @@
 		<j:choose>
 			<j:when test="${!job.hasLink()}">
 			<td style="${job.getCss()}">
-				<span id="handle_${job.getGroupClass()}" style='cursor: pointer' onClick="toggleJogGroupVisibility(this,'${job.getGroupClass()}')">[-]</span> ${job.displayName}
+				<span id="handle_${job.getGroupClass()}" style='cursor: pointer' 
+					onClick="toggleJogGroupVisibility(this,'${view.getViewName()}','${job.getGroupClass()}')">[-]</span> 
+				${job.displayName}
 			</td>
 			<script type="text/javascript">
 				document.observe("dom:loaded", function() {
-					restoreJobGroupCollapseState("${job.getGroupClass()}")
+					restoreJobGroupCollapseState("${view.getViewName()}", "${job.getGroupClass()}")
 				});
 			</script>
 			</j:when>
 			<j:when test="${job.hasLink()}">
 			<td style="${job.getCss()}" class="${job.getGroupClass()}">			
-				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
+				<a href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
 			</td>				
 			</j:when>
 		</j:choose>

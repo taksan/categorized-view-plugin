@@ -5,6 +5,7 @@ import hudson.Util;
 import hudson.model.TopLevelItem;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.Job;
 import hudson.model.ListView;
 import hudson.model.ViewDescriptor;
 import hudson.util.DescribableList;
@@ -30,10 +31,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class CategorizedJobsView extends ListView {
-	@SuppressWarnings("unused")
-	private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(
-						this, CategorizedJobsListViewColumn.createDefaultInitialColumnList());
-	
 	private List<GroupingRule> groupingRules = new ArrayList<GroupingRule>();
 	
 	@DataBoundConstructor
@@ -51,20 +48,7 @@ public class CategorizedJobsView extends ListView {
 	@Override
 	protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
 		super.submit(req);
-		groupingRules = new ArrayList<GroupingRule>();
-		
-		if (req.getSubmittedForm().get("groupingRules") instanceof JSONObject) {
-			GroupingRule bindJSON = req.bindJSON(GroupingRule.class, req.getSubmittedForm().getJSONObject("groupingRules"));
-			groupingRules.add(bindJSON);
-		}
-		else {
-			JSONArray jsonArray = req.getSubmittedForm().getJSONArray("groupingRules");
-			for (Object object : jsonArray) {
-				JSONObject json= (JSONObject) object;
-				GroupingRule bindJSON = req.bindJSON(GroupingRule.class, json);
-				groupingRules.add(bindJSON);
-			}
-		}
+		groupingRules = req.bindJSONToList(GroupingRule.class, req.getSubmittedForm().get("groupingRules"));
 	}
     
     public List<GroupingRule> getGroupingRules() {
@@ -108,7 +92,7 @@ public class CategorizedJobsView extends ListView {
 			field.set(
 					this,
 					new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(
-							this, CategorizedJobsListViewColumn.createDefaultInitialColumnList()));
+							this, CategorizedJobsListViewColumn.createDefaultCategorizedInitialColumnList()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

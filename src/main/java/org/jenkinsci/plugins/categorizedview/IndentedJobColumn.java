@@ -17,5 +17,10 @@ public class IndentedJobColumn extends CategorizedJobsListViewColumn {
         public String getDisplayName() {
         	return " Categorized - Job";
         }
+        
+        @Override
+        public boolean shownByDefault() {
+        	return false;
+        }
     }
 }

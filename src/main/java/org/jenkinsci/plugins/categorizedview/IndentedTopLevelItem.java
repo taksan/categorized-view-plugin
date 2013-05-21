@@ -1,5 +1,18 @@
 package org.jenkinsci.plugins.categorizedview;
 
+import hudson.model.BallColor;
+import hudson.model.HealthReport;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.TopLevelItem;
+import hudson.model.TopLevelItemDescriptor;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.search.SearchIndex;
+import hudson.search.Search;
+import hudson.security.ACL;
+import hudson.security.Permission;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,16 +20,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.acegisecurity.AccessDeniedException;
-
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
-import hudson.model.Job;
-import hudson.search.SearchIndex;
-import hudson.search.Search;
-import hudson.security.ACL;
-import hudson.security.Permission;
 
 public class IndentedTopLevelItem implements TopLevelItem {
 	
@@ -37,7 +40,43 @@ public class IndentedTopLevelItem implements TopLevelItem {
 	public int getNestLevel() {
 		return nestLevel;
 	}
+	
+	public boolean hasLink() {
+		return getShortUrl() != null;
+	}
+	
+	public String getGroupClass() {
+		return groupLabel.replace(".", "_").replace(" ","_");
+	}
 
+	public String getCss() {
+		StringBuilder builder = getBasicCss();
+		return builder.toString();
+	}
+
+	private StringBuilder getBasicCss() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("padding-left:");
+		builder.append(String.valueOf((getNestLevel() + 1) * 20));
+		builder.append("px;");
+		builder.append(specificCss.toString());
+		return builder;
+	}
+
+	StringBuilder specificCss = new StringBuilder();
+	
+	public void add(IndentedTopLevelItem item) {
+		nestedItems.add(item);
+	}
+	
+	public List<IndentedTopLevelItem> getNestedItems() {
+		return nestedItems;
+	}
+	
+	private List<IndentedTopLevelItem> nestedItems = new ArrayList<IndentedTopLevelItem>();
+
+	////
+	
 	public ACL getACL() {
 		return decorated.getACL();
 	}
@@ -141,37 +180,51 @@ public class IndentedTopLevelItem implements TopLevelItem {
 		return decorated.getName();
 	}
 	
-	public boolean hasLink() {
-		return getShortUrl() != null;
+	/// implicit
+	
+	public BallColor getIconColor() {
+		if (decorated instanceof Job)
+			return ((Job)decorated).getIconColor();
+		else
+			return null;
 	}
 	
-	public String getGroupClass() {
-		return groupLabel.replace(".", "_");
+    public Run getLastBuild() {
+    	if (decorated instanceof Job)
+			return ((Job)decorated).getLastBuild();
+		else
+			return null;
 	}
-
-	public String getCss() {
-		StringBuilder builder = getBasicCss();
-		return builder.toString();
+    
+    public Run getLastSuccessfulBuild() {
+    	if (decorated instanceof Job)
+			return ((Job)decorated).getLastSuccessfulBuild();
+		else
+			return null;
+    }
+    
+    public Run getLastFailedBuild() {
+    	if (decorated instanceof Job)
+			return ((Job)decorated).getLastFailedBuild();
+		else
+			return null;
+    }
+    public Run getLastUnsuccessfulBuild() {
+    	if (decorated instanceof Job)
+			return ((Job)decorated).getLastUnsuccessfulBuild();
+		else
+			return null;
+    }
+    
+    public HealthReport getBuildHealth() {
+    	if (decorated instanceof Job)
+    		return ((Job)decorated).getBuildHealth();
+    	return null;
 	}
-
-	private StringBuilder getBasicCss() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("padding-left:");
-		builder.append(String.valueOf((getNestLevel() + 1) * 20));
-		builder.append("px;");
-		builder.append(specificCss.toString());
-		return builder;
-	}
-
-	StringBuilder specificCss = new StringBuilder();
-	
-	public void add(IndentedTopLevelItem item) {
-		nestedItems.add(item);
-	}
-	
-	public List<IndentedTopLevelItem> getNestedItems() {
-		return nestedItems;
-	}
-	
-	private List<IndentedTopLevelItem> nestedItems = new ArrayList<IndentedTopLevelItem>();
+    
+    public long getEstimatedDuration() {
+    	if (decorated instanceof Job)
+    		return ((Job)decorated).getEstimatedDuration();
+    	return 0;
+    }
 }
