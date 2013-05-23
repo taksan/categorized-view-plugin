@@ -74,12 +74,11 @@ THE SOFTWARE.
 
   </f:section>
   
-  <f:section title="${%Job grouping}">
+  <f:section title="${%Job group categorization}">
   
-  <f:entry title="${%Grouping rules}">
+  <f:entry title="">
       <f:repeatableProperty field="groupingRules" name="groupingRules" items="${it.groupingRules}" add="${%Add new group rule}"/>
     </f:entry>  
-  
   
   </f:section>
 

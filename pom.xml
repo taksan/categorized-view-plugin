@@ -25,4 +25,17 @@
       <url>http://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
+
+  <developers>
+    <developer>
+      <id>taksan</id>
+      <name>Gabriel Takeuchi</name>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:ssh://github.com/taksan/categorized-view-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/taksan/categorized-view-plugin.git</developerConnection>
+    <url>https://github.com/categorized-view-plugin/elastic-axis-plugin</url>
+  </scm>
+
 </project>
