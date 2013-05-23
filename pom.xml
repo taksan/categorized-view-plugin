@@ -35,7 +35,6 @@
   <scm>
     <connection>scm:git:ssh://github.com/taksan/categorized-view-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/taksan/categorized-view-plugin.git</developerConnection>
-    <url>https://github.com/categorized-view-plugin/elastic-axis-plugin</url>
+    <url>https://github.com/taksan/categorized-view-plugin</url>
   </scm>
-
 </project>
