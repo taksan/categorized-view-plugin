@@ -28,7 +28,9 @@ function hideJobGroup(viewName, group) {
 		}
 	)
 	setGroupState(viewName,group, "none");
-	$$("#handle_"+group).first().innerHTML = '[+]';
+	var src = $$("#handle_"+group+" img").first().src;
+	src = src.replace(/images\/.*/,"images/collapsed.png")
+	$$("#handle_"+group+" img").first().src = src;
 }
 
 function showJobGroup(viewName, group) {
@@ -39,7 +41,9 @@ function showJobGroup(viewName, group) {
 		}
 	)
 	setGroupState(viewName, group, "");
-	$$("#handle_"+group).first().innerHTML = '[-]';	
+		var src = $$("#handle_"+group+" img").first().src;
+	src = src.replace(/images\/.*/,"images/expanded.png")
+	$$("#handle_"+group+" img").first().src = src;	
 }
 
 function getGroupStates(viewName) {
