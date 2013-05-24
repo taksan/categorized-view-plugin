@@ -67,9 +67,6 @@ public class CategorizedJobsView extends ListView {
 			return "Categorized Jobs View";
 		}
 		
-		/**
-		 * Checks if the include regular expression is valid.
-		 */
 		public FormValidation doCheckIncludeRegex(@QueryParameter String value)
 				throws IOException, ServletException, InterruptedException {
 			String v = Util.fixEmpty(value);
