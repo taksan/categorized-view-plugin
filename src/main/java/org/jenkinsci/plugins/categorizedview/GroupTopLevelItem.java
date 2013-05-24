@@ -136,6 +136,6 @@ public class GroupTopLevelItem  implements TopLevelItem {
 	}
 
 	public String getCss() {
-		return "font-style:italic;font-size:smaller;font-weight:bold;";
+		return "font-weight:bold;";
 	}
 }

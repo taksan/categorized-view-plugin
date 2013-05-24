@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+@SuppressWarnings("unchecked")
 public class TopLevelItemMock extends AbstractItem implements TopLevelItem {
 
 	public TopLevelItemMock(String name) {
@@ -71,6 +72,7 @@ public class TopLevelItemMock extends AbstractItem implements TopLevelItem {
 		};
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Collection<? extends Job> getAllJobs() {
 		throw new RuntimeException("NOT IMPLEMENTED");
